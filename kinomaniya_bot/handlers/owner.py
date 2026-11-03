@@ -13,6 +13,7 @@ from database import crud
 from keyboards.admin import admins_kb, cancel_kb, channels_kb
 from keyboards.callbacks import OwnerCb
 from services import subscription
+from services.subscription import ChannelInfo
 from states import OwnerStates
 from utils import roles
 from utils.filters import IsOwner
@@ -87,7 +88,8 @@ async def adm_del(cb: CallbackQuery, callback_data: OwnerCb, session: AsyncSessi
 
 # ───────────── kanallar (majburiy obuna / post) ─────────────
 async def _channels_view(session: AsyncSession, kind: str):
-    channels = await crud.get_channels(session, kind)
+    rows = await crud.get_channels(session, kind)
+    channels = [ChannelInfo(c.id, c.chat_id, c.title, None) for c in rows]
     lines = [f"<b>{_KIND_TITLE[kind]}</b>", "┃"]
     lines += [f"┣ {esc(c.title)}" for c in channels] or ["┣ hozircha yo'q"]
     return "\n".join(lines), channels_kb(kind, channels)
